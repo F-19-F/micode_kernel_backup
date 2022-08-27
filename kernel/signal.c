@@ -4296,7 +4296,7 @@ static int signals_sendmsg(struct task_struct *tsk,
 
 	return ret;
 }
-
+// init signal sub module
 static void signas_init_millet(struct millet_sock *sk)
 {
 	if (sk) {
@@ -4315,6 +4315,7 @@ void __init signals_init(void)
 
 	sigqueue_cachep = KMEM_CACHE(sigqueue, SLAB_PANIC);
 #ifdef CONFIG_MILLET
+// signal submodule register
 	register_millet_hook(SIG_TYPE, NULL,
 		signals_sendmsg, signas_init_millet);
 #endif

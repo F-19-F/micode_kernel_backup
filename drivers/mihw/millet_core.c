@@ -8,6 +8,7 @@
  * Date:  2019/11/27
  */
 
+// netlink between kernel and userspace 
 #define pr_fmt(fmt) "millet: " fmt
 
 #include <linux/kernel.h>
@@ -225,6 +226,7 @@ static void recv_handler(struct sk_buff *skb)
 	}
 
 	from = nlh->nlmsg_pid;
+	// struct for userspace and kernel space
 	payload = (struct millet_userconf *) NLMSG_DATA(nlh);
 	if (payload->src_port != MILLET_USER_ID) {
 		pr_err("src_port %x is not valid!\n",
@@ -237,7 +239,7 @@ static void recv_handler(struct sk_buff *skb)
 		       payload->dst_port);
 		return;
 	}
-
+// millet sendmsg type
 	if (!TYPE_VALID(payload->owner)) {
 		pr_err("mod %d is not valid!\n",
 		       payload->owner);
@@ -381,7 +383,7 @@ static const struct file_operations millet_version_fops = {
 	.release   = single_release,
 	.owner   = THIS_MODULE,
 };
-
+// sub module register 
 int register_millet_hook(int type, recv_hook recv_from,
 		send_hook send_to, init_hook init)
 {

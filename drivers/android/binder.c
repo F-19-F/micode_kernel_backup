@@ -5621,7 +5621,7 @@ static int binder_sendmsg(struct task_struct *tsk,
 
 	return ret;
 }
-
+// binder sub module
 static void binder_init_millet(struct millet_sock *sk)
 {
 	if (sk)
@@ -5648,7 +5648,7 @@ static int binder_st_sendmsg(struct task_struct *tsk,
 
 	return ret;
 }
-
+// binder st sub module
 static void binder_st_init_millet(struct millet_sock *sk)
 {
 	if (sk)
@@ -6729,8 +6729,10 @@ static int __init binder_init(void)
 	}
 
 #ifdef CONFIG_MILLET
+// binder sub module  register
 	register_millet_hook(BINDER_TYPE, NULL,
 			binder_sendmsg, binder_init_millet);
+// binder_st sub module
 	register_millet_hook(BINDER_ST_TYPE, binder_recv_hook,
 			binder_st_sendmsg, binder_st_init_millet);
 #endif

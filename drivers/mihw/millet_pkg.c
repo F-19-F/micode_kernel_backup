@@ -18,7 +18,7 @@
 #include <net/inet6_hashtables.h>
 #include <linux/millet.h>
 
-
+// monitor tcp in for monitor uids
 #define MAX_REC_UID 64
 static atomic_t uid_rec[MAX_REC_UID];
 
@@ -138,7 +138,7 @@ static void pkg_recv_hook(void *data, unsigned int len)
 
 	return;
 }
-
+// pkg sub module
 static void pkg_init_millet(struct millet_sock *sk)
 {
 	if (sk)
@@ -283,6 +283,7 @@ static int __init millet_pkg_init(void)
 		return RET_ERR;
 	}
 	pr_err("nf_register_hooks(millet hooks) success\n");
+	// register pkg sub module
 	register_millet_hook(PKG_TYPE, pkg_recv_hook, pkg_sendmsg,
 			pkg_init_millet);
 	return RET_OK;
