@@ -175,22 +175,22 @@ static unsigned int pkg_ip4_in(void *priv, struct sk_buff *skb,
 	sk = skb_to_full_sk(skb);
 	if (sk == NULL || !sk_fullsock(sk))
 		return NF_ACCEPT;
-
+	//获取ipv4 tcp socket对用的uid
 	uid = __sock_i_uid(sk);
 	if (uid < UID_MIN_VALUE)
 		return NF_ACCEPT;
-
+	// 是否是监听的uid
 	found = find_and_clear_uid(uid);
 	if (!found)
 		return NF_ACCEPT;
 	data.mod.k_priv.pkg.owner_pid = 0;
 	data.mod.k_priv.pkg.pkg_owner = (int) uid;
-	if (millet_sendmsg(PKG_TYPE, current, &data) < 0)
+	if (millet_sendmsg(PKG_TYPE, current, &data) < 0)//发送给应用层的millet_monitor，应用层创建socket在libmillet_comm.so
 		pr_err("%s : up report failed!\n", __func__);
 
 	return NF_ACCEPT;
 }
-
+// v6入站
 static unsigned int pkg_ip6_in(void *priv, struct sk_buff *skb,
 		const struct nf_hook_state *state)
 {
