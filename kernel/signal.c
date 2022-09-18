@@ -1289,6 +1289,7 @@ int do_send_sig_info(int sig, struct siginfo *info, struct task_struct *p,
 		data.mod.k_priv.sig.caller_task = current;
 		data.mod.k_priv.sig.killed_task = p;
 		data.mod.k_priv.sig.reason = KILLED_BY_PRO;
+		// SIG only send SIGKILL SIGTERM SIGABRT SIGQUIT
 		millet_sendmsg(SIG_TYPE, p, &data);
 	}
 #endif

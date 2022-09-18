@@ -7,8 +7,7 @@
  * Version: 1.0
  * Date:  2019/11/27
  */
-
-// netlink between kernel and userspace 
+// 提供统一的接口和用户态应用通信
 #define pr_fmt(fmt) "millet: " fmt
 
 #include <linux/kernel.h>

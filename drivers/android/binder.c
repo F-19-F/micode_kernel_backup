@@ -3102,15 +3102,15 @@ static void binder_transaction(struct binder_proc *proc,
 #ifdef CONFIG_MILLET
 		if (target_proc
 			&& target_proc->tsk
-			&& (task_uid(target_proc->tsk).val <= frozen_uid_min)) {
+			&& (task_uid(target_proc->tsk).val <= frozen_uid_min)) {// 目的uid是系统应用的binder_transaction立马通知
 			struct millet_data data;
 
 			memset(&data, 0, sizeof(struct millet_data));
-			data.pri[0] =  BINDER_REPLY;
+			data.pri[0] =  BINDER_REPLY;//用户应用->系统应用(回复) 用户应用作为binder server,系统应用作为binder client。
 			data.mod.k_priv.binder.trans.src_task = proc->tsk;
 			data.mod.k_priv.binder.trans.caller_tid = thread->pid;
 			data.mod.k_priv.binder.trans.dst_task = target_proc->tsk;
-			data.mod.k_priv.binder.trans.tf_oneway = tr->flags & TF_ONE_WAY;
+			data.mod.k_priv.binder.trans.tf_oneway = tr->flags & TF_ONE_WAY; //是否异步事务
 			data.mod.k_priv.binder.trans.code = tr->code;
 			millet_sendmsg(BINDER_TYPE, target_proc->tsk, &data);
 		}
@@ -3170,7 +3170,7 @@ static void binder_transaction(struct binder_proc *proc,
 #ifdef CONFIG_MILLET
 		if (target_proc
 			&& target_proc->tsk
-			&& (task_uid(target_proc->tsk).val > 10000)
+			&& (task_uid(target_proc->tsk).val > 10000)//目标用户应用，用户应用收到binder事务
 			&& (proc->pid != target_proc->pid)) {
 			struct millet_data data;
 
@@ -4299,14 +4299,15 @@ static int binder_wait_for_work(struct binder_thread *thread,
 			target_proc = t->to_proc;
 
 		if (target_proc
-			&& (!(t->flags & TF_ONE_WAY))
+			&& (!(t->flags & TF_ONE_WAY)) // 同步
 			&& target_proc->tsk
-			&& (task_uid(target_proc->tsk).val <= frozen_uid_min)
-			&& (proc->pid != target_proc->pid)) {
+			&& (task_uid(target_proc->tsk).val <= frozen_uid_min) //等待系统应用的返回结果 
+			&& (proc->pid != target_proc->pid)) {//不是系统应用自己发给自己的?
 			struct millet_data data;
 
 			memset(&data, 0, sizeof(struct millet_data));
 			data.pri[0] =  BINDER_THREAD_HAS_WORK;
+			// binder线程有到系统应用的同步binder事务，等待结果
 			data.mod.k_priv.binder.trans.src_task = proc->tsk;
 			data.mod.k_priv.binder.trans.caller_tid = thread->pid;
 			data.mod.k_priv.binder.trans.dst_task = target_proc->tsk;
@@ -5565,7 +5566,7 @@ busy:
 	millet_sendmsg(BINDER_ST_TYPE, tsk, &data);
 	return data.mod.k_priv.binder.stat.reason;
 }
-
+// 需要用户态发送请求，再返回结果，如果目标进程binder处于IDLE,则只会有一次send,否则有两次send
 static void binder_recv_hook(void *data, unsigned int len)
 {
 	struct millet_userconf *payload = (struct millet_userconf *)data;
@@ -5591,6 +5592,7 @@ static void binder_recv_hook(void *data, unsigned int len)
 		sdata.mod.k_priv.binder.stat.reason = BINDER_IN_BUSY;
 
 	sdata.uid = uid;
+	// 这个意义仅仅在于发送是否处于IDLE状态,query时如果繁忙就已经发送过一次状态了
 	millet_sendmsg(BINDER_ST_TYPE, current, &sdata);
 	mutex_unlock(&binder_procs_lock);
 }
@@ -6729,10 +6731,8 @@ static int __init binder_init(void)
 	}
 
 #ifdef CONFIG_MILLET
-// binder sub module  register
 	register_millet_hook(BINDER_TYPE, NULL,
 			binder_sendmsg, binder_init_millet);
-// binder_st sub module
 	register_millet_hook(BINDER_ST_TYPE, binder_recv_hook,
 			binder_st_sendmsg, binder_st_init_millet);
 #endif

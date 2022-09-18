@@ -53,7 +53,7 @@ static const char *NAME_ARRAY[NAME_MAXLEN] = {
 	"HANDSHK",
 	"invalid",
 };
-
+// binder query的返回结果类型
 enum BINDER_STAT {
 	BINDER_IN_IDLE,
 	BINDER_IN_BUSY,
@@ -82,6 +82,7 @@ struct time_stamp {
 	unsigned long long sec;
 	long nsec;
 };
+// kernel - > userspace (mainly receive by framework. then send to powerkeeper)
 
 struct millet_data {
 	enum MILLET_TYPE owner;
@@ -139,7 +140,7 @@ struct millet_data {
 	} mod;
 
 };
-
+// userspace -> kernel (mainly send by powerkeeper  libpowerkeeper_jni.so)
 struct millet_userconf{
 	enum MILLET_TYPE owner;
 	enum MSG_TYPE msg_type;
@@ -166,3 +167,12 @@ struct millet_userconf{
 
 };
 #endif
+// main interfaces (libmillet_commin.so)
+// 创建millet socket 输入一个int 的指针
+extern int create_millet_sock(int *fd);
+// 关闭socket
+extern int destroy_millet_sock(int *fd);
+// 发送消息
+extern int millet_sendmsg(int *fd,unsigned int owner,struct millet_userconf *userconf);
+// 循环接收消息
+extern int millet_recv_loop(int *fd,unsigned int owner,void(*callback)(struct millet_data *data));
